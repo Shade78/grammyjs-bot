@@ -1,5 +1,11 @@
 require("dotenv").config(); // получаем доступ к переменной окружения
-const { Bot, GrammyError, HttpError, Keyboard } = require("grammy");
+const {
+  Bot,
+  GrammyError,
+  HttpError,
+  Keyboard,
+  InlineKeyboard,
+} = require("grammy");
 
 const bot = new Bot(process.env.BOT_API_KEY);
 
@@ -11,6 +17,14 @@ bot.api.setMyCommands([
   {
     command: "get_user",
     description: "get data of user from jsonplaceholder",
+  },
+  {
+    command: "share",
+    description: "share with bot geolocation, phone number or create a poll",
+  },
+  {
+    command: "inline_keyboard",
+    description: "replies with inline keyboard",
   },
 ]);
 
@@ -36,10 +50,38 @@ bot.command("mood", async (ctx) => {
   });
 });
 
+bot.command("share", async (ctx) => {
+  const shareKeyboard = new Keyboard()
+    .requestLocation("Geolocation")
+    .requestContact("Contact")
+    .requestPoll("Poll")
+    .placeholder("share data")
+    .resized();
+
+  await ctx.reply("what do you want to share?", {
+    reply_markup: shareKeyboard,
+  });
+});
+
+bot.command("inline_keyboard", async (ctx) => {
+  const inlineKeyboard = new InlineKeyboard()
+    .text("1", "button-1")
+    .text("2", "button-2")
+    .text("3", "button-3");
+
+  await ctx.reply("pick a number", {
+    reply_markup: inlineKeyboard,
+  });
+});
+
 bot.hears("good", async (ctx) => {
   await ctx.reply("ok", {
     reply_markup: { remove_keyboard: true },
   });
+});
+
+bot.on(":contact", async (ctx) => {
+  await ctx.reply("thx for contact!");
 });
 
 // можно добавить регулярку (bot.hears)
